@@ -2,7 +2,7 @@
 
 **Group members:**
 - A
-- B
+- Christoffer Jackson (mjv474)
 - C
 
 This repository contains  
