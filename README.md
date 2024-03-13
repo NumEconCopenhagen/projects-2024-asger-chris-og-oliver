@@ -1,7 +1,7 @@
 # \[Group name\]
 
 **Group members:**
-- A
+- Oliver Ouwei Ding (wgl247)
 - Christoffer Jackson (mjv474)
 - C
 
