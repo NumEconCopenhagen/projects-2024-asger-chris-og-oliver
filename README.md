@@ -1,4 +1,4 @@
-# \[Group name\]
+# \[Intro to pro num anal\]
 
 **Group members:**
 - Oliver Ouwei Ding (wgl247)
