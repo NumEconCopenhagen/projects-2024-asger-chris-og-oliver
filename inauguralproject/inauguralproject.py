@@ -1,6 +1,16 @@
 from types import SimpleNamespace
 import numpy as np
 import matplotlib.pyplot as plt  
+import ipywidgets as widgets
+
+
+# N = 75
+# P_1 = [0.5]
+
+# i = 1
+# while P_1[-1] < 2.5:
+#     P_1.append(0.5 + (2*i)/N)
+#     i += 1  
 
 class ExchangeEconomyClass:
 
@@ -88,6 +98,32 @@ class ExchangeEconomyClass:
                 e2_best = e2_now
                 p1_best = p1
         return e1_best, e2_best, p1_best
+
+    def plot_error(self, p1, N):
+          
+        # i. market erros from P_1
+        N = N
+        P_1 = np.linspace(0, 3, N)
+        errors = []
+        for p in P_1:
+            e1_now, e2_now = self.check_market_clearing(p)
+            errors.append((e1_now, e2_now))
+
+        eps1, eps2 = zip(*errors)
+
+        e1, e2 = self.check_market_clearing(p1)
+        # ii. figure
+        fig = plt.figure(dpi=100)
+        ax = fig.add_subplot(1,1,1)
+        ax.scatter(P_1,eps1,lw=2, color = "skyblue")
+        ax.scatter(P_1,eps2,lw=2, color = "skyblue")
+        ax.scatter(p1,e1,lw=2, label = "error1", color = "red")
+        ax.scatter(p1,e2,lw=2, label = "error2", color = "blue");
+        ax.axhline(0, color = "black")
+        ax.set_ylim([-0.5,1.5])
+        ax.set_xlim([0.25,2.5])
+        ax.legend()
+
     
 
 
