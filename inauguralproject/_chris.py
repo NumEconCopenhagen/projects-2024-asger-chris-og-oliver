@@ -1,8 +1,6 @@
 from types import SimpleNamespace
 import numpy as np
 import matplotlib.pyplot as plt  
-import ipywidgets as widgets
-
 
 # N = 75
 # P_1 = [0.5]
@@ -100,10 +98,9 @@ class ExchangeEconomyClass:
         return e1_best, e2_best, p1_best
 
     def plot_error(self, p1, N):
-          
         # i. market erros from P_1
         N = N
-        P_1 = np.linspace(0, 3, N)
+        P_1 = np.linspace(1e-4, 3, N)
         errors = []
         for p in P_1:
             e1_now, e2_now = self.check_market_clearing(p)
@@ -112,6 +109,7 @@ class ExchangeEconomyClass:
         eps1, eps2 = zip(*errors)
 
         e1, e2 = self.check_market_clearing(p1)
+        
         # ii. figure
         fig = plt.figure(dpi=100)
         ax = fig.add_subplot(1,1,1)
