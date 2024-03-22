@@ -65,7 +65,13 @@ class ExchangeEconomyClass:
 
         return eps1,eps2
     
-    def paretoC(self, x1A_vec, x2A_vec, uA_bar, uB_bar):
+    def paretoC(self, N = 75):
+        N = N
+        x1A_vec = np.linspace(0,1,N)
+        x2A_vec = np.linspace(0,1,N)
+        uA_bar = self.utility_A(self.par.w1A, self.par.w2A)
+        uB_bar = self.utility_B(self.par.w1B, self.par.w2B)
+
         kombinationer = []
         for x1a in x1A_vec:
             for x2a in x2A_vec:
@@ -76,6 +82,51 @@ class ExchangeEconomyClass:
                 if uA >= uA_bar and uB >= uB_bar:
                     kombinationer.append((x1a, x2a))
         return kombinationer
+    
+    def plot_edgeworth(self, w1a, w2a, N = 75):
+        par = self.par
+
+        # Create pareto combinations
+        kombinationer = self.paretoC(N)
+        x1, x2 = zip(*kombinationer)
+
+        # 4 Plot settings
+        plt.rcParams.update({"axes.grid":True,"grid.color":"black","grid.alpha":"0.25","grid.linestyle":"--"})
+        plt.rcParams.update({'font.size': 14})
+
+        # a. total endowment
+        w1bar = 1.0
+        w2bar = 1.0
+
+        # b. figure set up
+        fig = plt.figure(frameon=True,figsize=(6,6), dpi=100)
+        ax_A = fig.add_subplot(1, 1, 1)
+        
+        ax_A.set_xlabel("$x_1^A$")
+        ax_A.set_ylabel("$x_2^A$")
+
+        temp = ax_A.twinx()
+        temp.set_ylabel("$x_2^B$")
+        ax_B = temp.twiny()
+        ax_B.set_xlabel("$x_1^B$")
+        ax_B.invert_xaxis()
+        ax_B.invert_yaxis()
+
+        ax_A.scatter(x1,x2,marker='s',color='royalblue',label='pareto improvements', s = 50)
+        ax_A.scatter(w1a, w2a ,marker='s',color='black',label='endowment', s = 50)
+
+        # limits
+        ax_A.plot([0,w1bar],[0,0],lw=2,color='black')
+        ax_A.plot([0,w1bar],[w2bar,w2bar],lw=2,color='black')
+        ax_A.plot([0,0],[0,w2bar],lw=2,color='black')
+        ax_A.plot([w1bar,w1bar],[0,w2bar],lw=2,color='black')
+
+        ax_A.set_xlim([-0.1, w1bar + 0.1])
+        ax_A.set_ylim([-0.1, w2bar + 0.1])    
+        ax_B.set_xlim([w1bar + 0.1, -0.1])
+        ax_B.set_ylim([w2bar + 0.1, -0.1])
+
+        ax_A.legend(frameon=True,bbox_to_anchor=(1.1,1.0));
     
     def market_clear(self, P_1):
         e1 = 10
@@ -90,7 +141,7 @@ class ExchangeEconomyClass:
                 p1_best = p1
         return e1_best, e2_best, p1_best
 
-    def plot_error(self, p1, N):
+    def plot_error(self, p1, N = 75):
         # i. market erros from P_1
         N = N
         P_1 = np.linspace(1e-4, 3, N)
@@ -168,58 +219,41 @@ class ExchangeEconomyClass:
         plt.legend()
         plt.show()
 
+    def A_market_maker(self, N = 75):
+        kombinationer = self.paretoC(N)
+        util_0 = 0
 
-    def plot_edgeworth(self, w1a, w2a, N):
-        par = self.par
+        for i in kombinationer:
+            util_now = self.utility_A(*i)
+            if util_now > util_0:
+                util_0 = util_now
+                util_best = util_now
+                x1_best, x2_best = i
 
-        # 1 Create x1A and x2A vectors
-        N = N
-        x1A_vec = np.linspace(0,1,N)
-        x2A_vec = np.linspace(0,1,N)
+        return x1_best, x2_best, util_best
+    
+    def A_market_maker_optimize(self):
         
-        # 2 Define utility when consuming endowment
-        uA_bar = self.utility_A(w1a, w2a)
-        uB_bar = self.utility_B(1-w1a, 1-w2a)
-
-        # 3 Create pareto combinations
-        kombinationer = self.paretoC(x1A_vec, x2A_vec, uA_bar, uB_bar)
-        x1, x2 = zip(*kombinationer)
-
-        # 4 Plot settings
-        plt.rcParams.update({"axes.grid":True,"grid.color":"black","grid.alpha":"0.25","grid.linestyle":"--"})
-        plt.rcParams.update({'font.size': 14})
-
-        # a. total endowment
-        w1bar = 1.0
-        w2bar = 1.0
-
-        # b. figure set up
-        fig = plt.figure(frameon=True,figsize=(6,6), dpi=100)
-        ax_A = fig.add_subplot(1, 1, 1)
         
-        ax_A.set_xlabel("$x_1^A$")
-        ax_A.set_ylabel("$x_2^A$")
+        # a. define objective function to minimize as a function of x1 and x2
+        def value_of_choice(x):
+            return -self.utility_A(x[0], x[1]) 
+        
+        uB_bar = self.utility_B(self.par.w1B, self.par.w2B)
 
-        temp = ax_A.twinx()
-        temp.set_ylabel("$x_2^B$")
-        ax_B = temp.twiny()
-        ax_B.set_xlabel("$x_1^B$")
-        ax_B.invert_xaxis()
-        ax_B.invert_yaxis()
+        # b. define bounds and restrictions
+        bounds = [(0, 1), (0, 1)]
+        constraints = ({'type': 'eq', 'fun': lambda x: self.utility_B(1 - x[0], 1 - x[1]) - uB_bar})
 
-        ax_A.scatter(x1,x2,marker='s',color='royalblue',label='pareto improvements', s = 10)
-        ax_A.scatter(w1a, w2a ,marker='s',color='black',label='endowment', s = 50)
+        # c. intitial guess and call optimizer
+        guess = [self.par.w1A, self.par.w2A]
+        result = optimize.minimize(value_of_choice, guess, bounds = bounds, constraints = constraints, method='SLSQP')
 
-        # limits
-        ax_A.plot([0,w1bar],[0,0],lw=2,color='black')
-        ax_A.plot([0,w1bar],[w2bar,w2bar],lw=2,color='black')
-        ax_A.plot([0,0],[0,w2bar],lw=2,color='black')
-        ax_A.plot([w1bar,w1bar],[0,w2bar],lw=2,color='black')
+        x1_best = result.x[0]
+        x2_best = result.x[1]
+        util_best = -result.fun
+        return x1_best, x2_best, util_best
 
-        ax_A.set_xlim([-0.1, w1bar + 0.1])
-        ax_A.set_ylim([-0.1, w2bar + 0.1])    
-        ax_B.set_xlim([w1bar + 0.1, -0.1])
-        ax_B.set_ylim([w2bar + 0.1, -0.1])
 
-        ax_A.legend(frameon=True,bbox_to_anchor=(1.1,1.0));
+
 
