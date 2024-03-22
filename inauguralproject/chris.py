@@ -253,7 +253,75 @@ class ExchangeEconomyClass:
         x2_best = result.x[1]
         util_best = -result.fun
         return x1_best, x2_best, util_best
+    
+    def social_planner(self):
+        def value_of_choice(x):
+            return -self.utility_A(x[0], x[1]) -self.utility_B(1 - x[0], 1 - x[1])
+        
+        # b. define bounds and restrictions
+        bounds = [(0, 1), (0, 1)]
 
+        # c. intitial guess and call optimizer
+        guess = [self.par.w1A, self.par.w2A]
+        result = optimize.minimize(value_of_choice, guess, bounds = bounds, method='SLSQP')
 
+        x1a_optimal = result.x[0]
+        x2a_optimal = result.x[1]
+        util_optimal_A = -result.fun
+        util_optimal_B = self.utility_B(1 - x1a_optimal, 1 - x2a_optimal)
 
+        return x1a_optimal, x2a_optimal, util_optimal_A, util_optimal_B
+    
+    def counttupples(self, wlist): 
+        uA_bar = self.utility_A(self.par.w1A, self.par.w2A)
+        uB_bar = self.utility_B(self.par.w1B, self.par.w2B)
+        finallst = []
+        for i in range(len(wlist)):
+            x1a = wlist[i][0]
+            x2a = wlist[i][1]
+            uA = self.utility_A(x1a, x2a)
+            x1b = 1 - x1a
+            x2b = 1 - x2a
+            uB = self.utility_B(x1b, x2b)
+            if uA >= uA_bar and uB >= uB_bar:
+                finallst.append((x1a, x2a))
+        return(finallst)
+    
+
+def W_float(N = 50):
+    N = N
+    wList = []
+    for i in range(N):
+        w_a = np.random.uniform(0, 1)
+        w_b = np.random.uniform(0, 1)
+        wList.append((w_a, w_b))
+    return wList
+
+def market_equlibria(belongToC, N = 500):
+    marketeq = ExchangeEconomyClass()
+    N = N
+    P_1 = np.linspace(1e-10, 10, N)
+    x1_eq = []
+    p1_eq =[]
+
+    e1 = np.inf
+    e2 = np.inf
+
+    for i in range(len(belongToC)):
+        for p1 in P_1:
+            marketeq.par.w1A = belongToC[i][0]
+            marketeq.par.w2A = belongToC[i][1]
+            marketeq.par.w1B = 1 - marketeq.par.w1A
+            marketeq.par.w2B = 1 - marketeq.par.w2A
+
+            e1_now, e2_now = marketeq.check_market_clearing(p1)
+            if np.abs(e1_now) < np.abs(e1) and np.abs(e2_now) < np.abs(e2):
+                e1 = e1_now
+                e2 = e2_now
+                p1_best = p1
+        e1 = np.inf
+        e2 = np.inf
+        p1_eq.append(p1_best)
+        x1_eq.append(marketeq.demand_A(p1_best)) 
+    return x1_eq, p1_eq
 
