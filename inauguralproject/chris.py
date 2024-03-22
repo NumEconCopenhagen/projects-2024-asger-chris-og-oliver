@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 import numpy as np
 import matplotlib.pyplot as plt  
+from scipy import optimize
 
 class ExchangeEconomyClass:
 
@@ -114,44 +115,111 @@ class ExchangeEconomyClass:
         ax.set_xlim([0.25,2.5])
         ax.legend()
 
+    def A_sets_price(self, P_1):
+        uA_0 = -np.inf
+        for p1 in P_1:
+            x1_A = 1 - self.demand_B(p1)[0]
+            x2_A = 1 - self.demand_B(p1)[1]
+            uA_now = self.utility_A(x1_A, x2_A)
+            if uA_now > uA_0:
+                uA_0 = uA_now
+                uA_best = uA_now
+                x1_A_best = x1_A
+                x2_A_best = x2_A
+                p1_A_best = p1
+
+        return x1_A_best, x2_A_best, uA_best, p1_A_best
     
+    def A_sets_price_optimize(self):
+        # a. define objective function to minimize as a function of p
+        obj = lambda p: -self.utility_A(1 - self.demand_B(p)[0], 1 - self.demand_B(p)[1]) 
 
+        # b. intitial guess and call optimizer
+        p0 = 1
+        result = optimize.minimize(obj, p0, method='SLSQP')
 
-def plot_edgeworth(x1, x2, w1a, w2a):
-    plt.rcParams.update({"axes.grid":True,"grid.color":"black","grid.alpha":"0.25","grid.linestyle":"--"})
-    plt.rcParams.update({'font.size': 14})
+        util = -result.fun
+        p = result.x[0]
+        x1a = 1 - self.demand_B(p)[0]
+        x2a = 1 - self.demand_B(p)[1]
+ 
 
-    # a. total endowment
-    w1bar = 1.0
-    w2bar = 1.0
-
-    # b. figure set up
-    fig = plt.figure(frameon=True,figsize=(6,6), dpi=100)
-    ax_A = fig.add_subplot(1, 1, 1)
+        return x1a, x2a, util, p
     
-    ax_A.set_xlabel("$x_1^A$")
-    ax_A.set_ylabel("$x_2^A$")
+    def plot_utility_A(self, P_1):
+        # Create an empty list to store the utility values
+        utility_values = []
+        A_sets_price = self.A_sets_price(P_1)
 
-    temp = ax_A.twinx()
-    temp.set_ylabel("$x_2^B$")
-    ax_B = temp.twiny()
-    ax_B.set_xlabel("$x_1^B$")
-    ax_B.invert_xaxis()
-    ax_B.invert_yaxis()
+        # Iterate over each value of p1 in P_1
+        for p1 in P_1:
+            x1_A = 1 - self.demand_B(p1)[0]
+            x2_A = 1 - self.demand_B(p1)[1]
+            # Calculate the utility for the given p1
+            utility = self.utility_A(x1_A, x2_A)
+            utility_values.append(utility)
 
-    ax_A.scatter(x1,x2,marker='o',color='royalblue',label='pareto improvements')
-    ax_A.scatter(w1a, w2a ,marker='s',color='black',label='endowment', s = 50)
+        # Plot the utility values
+        plt.plot(P_1, utility_values, label = "utility value")
+        plt.scatter(A_sets_price[3], A_sets_price[2], c="red", zorder=10, label = "maximum")  
+        plt.ylabel('Utility')
+        plt.xlabel('p1')
+        plt.title('Utility of A for different prices')
+        plt.legend()
+        plt.show()
 
-    # limits
-    ax_A.plot([0,w1bar],[0,0],lw=2,color='black')
-    ax_A.plot([0,w1bar],[w2bar,w2bar],lw=2,color='black')
-    ax_A.plot([0,0],[0,w2bar],lw=2,color='black')
-    ax_A.plot([w1bar,w1bar],[0,w2bar],lw=2,color='black')
 
-    ax_A.set_xlim([-0.1, w1bar + 0.1])
-    ax_A.set_ylim([-0.1, w2bar + 0.1])    
-    ax_B.set_xlim([w1bar + 0.1, -0.1])
-    ax_B.set_ylim([w2bar + 0.1, -0.1])
+    def plot_edgeworth(self, w1a, w2a, N):
+        par = self.par
 
-    ax_A.legend(frameon=True,bbox_to_anchor=(1.1,1.0));
+        # 1 Create x1A and x2A vectors
+        N = N
+        x1A_vec = np.linspace(0,1,N)
+        x2A_vec = np.linspace(0,1,N)
+        
+        # 2 Define utility when consuming endowment
+        uA_bar = self.utility_A(w1a, w2a)
+        uB_bar = self.utility_B(1-w1a, 1-w2a)
+
+        # 3 Create pareto combinations
+        kombinationer = self.paretoC(x1A_vec, x2A_vec, uA_bar, uB_bar)
+        x1, x2 = zip(*kombinationer)
+
+        # 4 Plot settings
+        plt.rcParams.update({"axes.grid":True,"grid.color":"black","grid.alpha":"0.25","grid.linestyle":"--"})
+        plt.rcParams.update({'font.size': 14})
+
+        # a. total endowment
+        w1bar = 1.0
+        w2bar = 1.0
+
+        # b. figure set up
+        fig = plt.figure(frameon=True,figsize=(6,6), dpi=100)
+        ax_A = fig.add_subplot(1, 1, 1)
+        
+        ax_A.set_xlabel("$x_1^A$")
+        ax_A.set_ylabel("$x_2^A$")
+
+        temp = ax_A.twinx()
+        temp.set_ylabel("$x_2^B$")
+        ax_B = temp.twiny()
+        ax_B.set_xlabel("$x_1^B$")
+        ax_B.invert_xaxis()
+        ax_B.invert_yaxis()
+
+        ax_A.scatter(x1,x2,marker='s',color='royalblue',label='pareto improvements', s = 10)
+        ax_A.scatter(w1a, w2a ,marker='s',color='black',label='endowment', s = 50)
+
+        # limits
+        ax_A.plot([0,w1bar],[0,0],lw=2,color='black')
+        ax_A.plot([0,w1bar],[w2bar,w2bar],lw=2,color='black')
+        ax_A.plot([0,0],[0,w2bar],lw=2,color='black')
+        ax_A.plot([w1bar,w1bar],[0,w2bar],lw=2,color='black')
+
+        ax_A.set_xlim([-0.1, w1bar + 0.1])
+        ax_A.set_ylim([-0.1, w2bar + 0.1])    
+        ax_B.set_xlim([w1bar + 0.1, -0.1])
+        ax_B.set_ylim([w2bar + 0.1, -0.1])
+
+        ax_A.legend(frameon=True,bbox_to_anchor=(1.1,1.0));
 
