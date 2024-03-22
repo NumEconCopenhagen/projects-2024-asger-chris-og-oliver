@@ -2,14 +2,6 @@ from types import SimpleNamespace
 import numpy as np
 import matplotlib.pyplot as plt  
 
-# N = 75
-# P_1 = [0.5]
-
-# i = 1
-# while P_1[-1] < 2.5:
-#     P_1.append(0.5 + (2*i)/N)
-#     i += 1  
-
 class ExchangeEconomyClass:
 
     def __init__(self):
