@@ -37,6 +37,7 @@ class ExchangeEconomyClass:
 
         return util_B
 
+
     def demand_A(self,p1):
         par = self.par
         I_A = p1*par.w1A + par.w2A
@@ -44,6 +45,7 @@ class ExchangeEconomyClass:
         x2A_star = (1-par.alpha)*I_A
 
         return x1A_star,x2A_star
+
 
     def demand_B(self,p1):
         par = self.par
@@ -65,6 +67,7 @@ class ExchangeEconomyClass:
 
         return eps1,eps2
     
+
     def paretoC(self, N = 75):
         N = N
         x1A_vec = np.linspace(0,1,N)
@@ -83,7 +86,17 @@ class ExchangeEconomyClass:
                     kombinationer.append((x1a, x2a))
         return kombinationer
     
-    def plot_edgeworth(self, w1a, w2a, N = 75):
+    def P_1(self, N = 75):
+        N = N
+        P_1 = [0.5]
+        i = 1
+        while P_1[-1] < 2.5:
+            P_1.append(0.5 + (2*i)/N)
+            i += 1 
+        return P_1
+
+
+    def plot_edgeworth(self, N = 75):
         par = self.par
 
         # Create pareto combinations
@@ -113,7 +126,7 @@ class ExchangeEconomyClass:
         ax_B.invert_yaxis()
 
         ax_A.scatter(x1,x2,marker='s',color='royalblue',label='pareto improvements', s = 50)
-        ax_A.scatter(w1a, w2a ,marker='s',color='black',label='endowment', s = 50)
+        ax_A.scatter(self.par.w1A, self.par.w2A ,marker='s',color='black',label='endowment', s = 50)
 
         # limits
         ax_A.plot([0,w1bar],[0,0],lw=2,color='black')
@@ -234,7 +247,6 @@ class ExchangeEconomyClass:
     
     def A_market_maker_optimize(self):
         
-        
         # a. define objective function to minimize as a function of x1 and x2
         def value_of_choice(x):
             return -self.utility_A(x[0], x[1]) 
@@ -287,6 +299,84 @@ class ExchangeEconomyClass:
                 finallst.append((x1a, x2a))
         return(finallst)
     
+    def plot_edgeworth2(self, N = 75, u_a = 0.5713, u_b = 0.4865, p1 = 0.9444):
+        plt.rcParams.update({"axes.grid":True,"grid.color":"black","grid.alpha":"0.25","grid.linestyle":"--"})
+        plt.rcParams.update({'font.size': 14})
+
+        par = self.par
+
+        # a. total endowment
+        w1bar = 1.0
+        w2bar = 1.0
+
+        # b. figure set up
+        fig = plt.figure(frameon=False,figsize=(6,6), dpi=100)
+        ax_A = fig.add_subplot(1, 1, 1)
+
+        ax_A.set_xlabel("$x_1^A$")
+        ax_A.set_ylabel("$x_2^A$")
+
+        temp = ax_A.twinx()
+        temp.set_ylabel("$x_2^B$")
+        ax_B = temp.twiny()
+        ax_B.set_xlabel("$x_1^B$")
+        ax_B.invert_xaxis()
+        ax_B.invert_yaxis()
+
+        kombinationer = self.paretoC()
+        x1, x2 = zip(*kombinationer)
+
+        ax_A.scatter(x1,x2,marker='o',color='royalblue',label='pareto improvements')
+        ax_A.scatter(par.w1A, par.w2A,marker='s',color='black',label='endowment', s = 50)
+        
+        P_1 = self.P_1(N)
+
+        # Allocations from 3-5
+        # Market clearing allocation
+        allocation_3 = self.market_clear(P_1)
+        market_clearing = self.demand_A(allocation_3[2])
+
+        # Price setter
+        allocation_4 = self.A_sets_price(P_1)
+
+        # Market maker
+        allocation_5 = self.A_market_maker()
+
+        # Allocations 3)-5)
+        ax_A.scatter(market_clearing[0], market_clearing[1], color = "red", label = "market clearing allocation")
+        ax_A.scatter(allocation_4[0], allocation_4[1], color = "yellow", label = "A is pricesetter")
+        ax_A.scatter(allocation_5[0], allocation_5[1], color = "m", label = "A is market maker")
+
+        # indifference curves
+        u_a = u_a
+        x1 = np.linspace(1e-8, 2, N)
+        x2 = (u_a*x1**(-self.par.alpha))**(1/(1-self.par.alpha))
+
+        u_b = u_b
+        x1b = np.linspace(1e-8, 2, N)
+        x2b = (u_b*x1b**(-self.par.beta))**(1/(1-self.par.beta))
+
+        # Budget line
+        p1 = p1
+        x2_budget = p1*self.par.w1A + self.par.w2A - p1*x1
+
+        ax_A.plot(x1, x2, color = "black", label = "indifference curve A")
+        ax_A.plot(1-x1b, 1-x2b, color = "blue", label = "indifference curve B")
+        ax_A.plot(x1, x2_budget, color = "orange", label = "budget line")
+
+        # limits
+        ax_A.plot([0,w1bar],[0,0],lw=2,color='black')
+        ax_A.plot([0,w1bar],[w2bar,w2bar],lw=2,color='black')
+        ax_A.plot([0,0],[0,w2bar],lw=2,color='black')
+        ax_A.plot([w1bar,w1bar],[0,w2bar],lw=2,color='black')
+
+        ax_A.set_xlim([-0.1, w1bar + 0.1])
+        ax_A.set_ylim([-0.1, w2bar + 0.1])    
+        ax_B.set_xlim([w1bar + 0.1, -0.1])
+        ax_B.set_ylim([w2bar + 0.1, -0.1])
+
+        ax_A.legend(frameon=True,bbox_to_anchor=(1.1,1.0));
+
 
 def W_float(N = 50):
     N = N
