@@ -230,6 +230,7 @@ class ExchangeEconomyClass:
         plt.xlabel('p1')
         plt.title('Utility of A for different prices')
         plt.legend()
+        plt.grid(True)
         plt.show()
 
     def A_market_maker(self, N = 75):
