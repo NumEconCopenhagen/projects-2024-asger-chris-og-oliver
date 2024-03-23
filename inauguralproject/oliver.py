@@ -91,6 +91,11 @@ class ExchangeEconomyClass:
                     kombinationer.append((x1a, x2a))
         return kombinationer
     
+    # We define a function P_1 used in Q2 on market errors. The function starts in
+    # P_1 = =0,5 and i = 1. The while loop stops when the last value of P_1 is below 2.5.
+    # As long as the last value P_1<2.5, we add an observation with the value 0.5+(2*i)/n, to the list P_1.
+    # then, we go onto the next value of i.
+    # The function simply just returns a list P_1.
     def P_1(self, N = 75):
         N = N
         P_1 = [0.5]
@@ -145,3 +150,47 @@ class ExchangeEconomyClass:
         ax_B.set_ylim([w2bar + 0.1, -0.1])
 
         ax_A.legend(frameon=True,bbox_to_anchor=(1.1,1.0));
+
+
+# Definerer en funktion, market_clear, der for hver værdi i P_1 returnerer værdierne eps1 og eps2 (fra check_market_clearing funktionen) og navngiver
+# dem e1_now, e2_now. Hvis den absolutte værdi af fejlene er mindre end 10 (why 10?), så sætter vi en e1 = e1_now.
+# og e1_best og e2_best = e1_now og e2_now. Og så p1_best = den p1 værdi vi er i gang med.
+# til sidst returnerer vi errorsne og prisen.
+# dette loop fortsætter vi med for alle 75 observationer i p1, og vi prøver dermed at finde den pris p1_best der giver de allermindst errors e1_best og e2_best.
+    def market_clear(self, P_1):
+        e1 = 10
+        e2 = 10
+        for p1 in P_1:
+            e1_now, e2_now = self.check_market_clearing(p1)
+            if np.abs(e1_now) < np.abs(e1) and np.abs(e2_now) < np.abs(e2):
+                e1 = e1_now
+                e2 = e2_now
+                e1_best = e1_now
+                e2_best = e2_now
+                p1_best = p1
+        return e1_best, e2_best, p1_best
+
+    def plot_error(self, p1, N = 75):
+        # i. market erros from P_1
+        N = N
+        P_1 = np.linspace(1e-4, 3, N)
+        errors = []
+        for p in P_1:
+            e1_now, e2_now = self.check_market_clearing(p)
+            errors.append((e1_now, e2_now))
+
+        eps1, eps2 = zip(*errors)
+
+        e1, e2 = self.check_market_clearing(p1)
+        
+        # ii. figure
+        fig = plt.figure(dpi=100)
+        ax = fig.add_subplot(1,1,1)
+        ax.scatter(P_1,eps1,lw=2, color = "skyblue")
+        ax.scatter(P_1,eps2,lw=2, color = "skyblue")
+        ax.scatter(p1,e1,lw=2, label = "error1", color = "red")
+        ax.scatter(p1,e2,lw=2, label = "error2", color = "blue");
+        ax.axhline(0, color = "black")
+        ax.set_ylim([-0.5,1.5])
+        ax.set_xlim([0.25,2.5])
+        ax.legend()
