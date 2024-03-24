@@ -1,4 +1,4 @@
-# \[Intro to pro num anal\]
+# \[asger-chris-og-oliver\]
 
 **Group members:**
 - Oliver Ouwei Ding (wgl247)
