@@ -8,7 +8,7 @@ class ExchangeEconomyClass:
     def __init__(self):
 
         par = self.par = SimpleNamespace()
-
+        
         # a. preferences
         par.alpha = 1/3
         par.beta = 2/3
@@ -20,8 +20,9 @@ class ExchangeEconomyClass:
         par.w2B = 1 - par.w2A
 
     def utility_A(self,x1A,x2A):
+        '''Cobb-Douglas utility function for consumer A'''
         par = self.par
-        if x1A < 0 or x2A < 0:
+        if x1A < 0 or x2A < 0: # Ensure it does not return imaginary numbers
             util_A = 0
         else:
             util_A = x1A**(par.alpha)*x2A**(1-par.alpha)
@@ -29,8 +30,9 @@ class ExchangeEconomyClass:
         
 
     def utility_B(self,x1B,x2B):
+        '''Cobb-Douglas utility function for consumer B'''
         par = self.par
-        if x1B < 0 or x2B < 0:
+        if x1B < 0 or x2B < 0: # Ensure it does not return imaginary numbers
             util_B = 0
         else:
             util_B = x1B**(par.beta)*x2B**(1-par.beta)
@@ -39,6 +41,7 @@ class ExchangeEconomyClass:
 
 
     def demand_A(self,p1):
+        '''The optimal demand given the price'''
         par = self.par
         I_A = p1*par.w1A + par.w2A
         x1A_star = par.alpha*((I_A)/(p1))
@@ -48,6 +51,7 @@ class ExchangeEconomyClass:
 
 
     def demand_B(self,p1):
+        '''The optimal demand given the price'''
         par = self.par
         I_B = p1*par.w1B + par.w2B
         x1B_star = par.beta*((I_B)/(p1))
@@ -57,32 +61,34 @@ class ExchangeEconomyClass:
         
 
     def check_market_clearing(self,p1):
+        '''The difference between the total optimal demand and the total market supply'''
         par = self.par
 
         x1A,x2A = self.demand_A(p1)
         x1B,x2B = self.demand_B(p1)
 
-        eps1 = x1A-par.w1A + x1B-(1-par.w1A)
-        eps2 = x2A-par.w2A + x2B-(1-par.w2A)
+        eps1 = x1A-par.w1A + x1B-(1-par.w1A) # The difference between demand and supply for good 1
+        eps2 = x2A-par.w2A + x2B-(1-par.w2A) # The difference between demand and supply for good 2
 
         return eps1,eps2
     
 
     def paretoC(self, N = 75):
-        N = N
+        '''Pareto optimal combinations compared to initial endowment'''
+        N = N # NxN amount of combinations to check
         x1A_vec = np.linspace(0,1,N)
         x2A_vec = np.linspace(0,1,N)
-        uA_bar = self.utility_A(self.par.w1A, self.par.w2A)
-        uB_bar = self.utility_B(self.par.w1B, self.par.w2B)
+        uA_bar = self.utility_A(self.par.w1A, self.par.w2A) # Utility when consuming endowment for A
+        uB_bar = self.utility_B(self.par.w1B, self.par.w2B) # Utility when consuming endowment for B
 
-        kombinationer = []
+        kombinationer = [] # Creating empty vector
         for x1a in x1A_vec:
-            for x2a in x2A_vec:
+            for x2a in x2A_vec:                 # looping through all combinations
                 uA = self.utility_A(x1a, x2a)
                 x1b = 1 - x1a
                 x2b = 1 - x2a
                 uB = self.utility_B(x1b, x2b)
-                if uA >= uA_bar and uB >= uB_bar:
+                if uA >= uA_bar and uB >= uB_bar: # appending combinations which are pareto efficient
                     kombinationer.append((x1a, x2a))
         return kombinationer
     
@@ -267,6 +273,23 @@ class ExchangeEconomyClass:
         util_best = -result.fun
         return x1_best, x2_best, util_best
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     def social_planner(self):
         def value_of_choice(x):
             return -self.utility_A(x[0], x[1]) -self.utility_B(1 - x[0], 1 - x[1])
