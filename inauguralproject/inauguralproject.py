@@ -21,7 +21,6 @@ class ExchangeEconomyClass:
 
     def utility_A(self,x1A,x2A):
         '''Cobb-Douglas utility function for consumer A'''
-
         par = self.par
         if x1A < 0 or x2A < 0: # Ensure it does not return imaginary numbers
             util_A = 0
@@ -32,7 +31,6 @@ class ExchangeEconomyClass:
 
     def utility_B(self,x1B,x2B):
         '''Cobb-Douglas utility function for consumer B'''
-
         par = self.par
         if x1B < 0 or x2B < 0: # Ensure it does not return imaginary numbers
             util_B = 0
@@ -44,7 +42,6 @@ class ExchangeEconomyClass:
 
     def demand_A(self,p1):
         '''The optimal demand given the price'''
-
         par = self.par
         I_A = p1*par.w1A + par.w2A
         x1A_star = par.alpha*((I_A)/(p1))
@@ -55,7 +52,6 @@ class ExchangeEconomyClass:
 
     def demand_B(self,p1):
         '''The optimal demand given the price'''
-
         par = self.par
         I_B = p1*par.w1B + par.w2B
         x1B_star = par.beta*((I_B)/(p1))
@@ -66,7 +62,6 @@ class ExchangeEconomyClass:
 
     def check_market_clearing(self,p1):
         '''The difference between the total optimal demand and the total market supply'''
-        
         par = self.par
 
         x1A,x2A = self.demand_A(p1)
@@ -80,7 +75,6 @@ class ExchangeEconomyClass:
 
     def paretoC(self, N = 75):
         '''Pareto optimal combinations compared to initial endowment'''
-
         N = N # NxN amount of combinations to check
         x1A_vec = np.linspace(0,1,N)
         x2A_vec = np.linspace(0,1,N)
@@ -100,7 +94,6 @@ class ExchangeEconomyClass:
     
     def P_1(self, N = 75):
         '''Defines price vector for given N'''
-
         N = N
         P_1 = [0.5]
         i = 1
@@ -112,7 +105,6 @@ class ExchangeEconomyClass:
 
     def plot_edgeworth(self, N = 75):
         '''Plots an Edgeworth box with Pareto efficient points'''
-
         par = self.par
 
         # Call Pareto combinations from self.paretoC()
@@ -160,7 +152,6 @@ class ExchangeEconomyClass:
     
     def market_clear(self, P_1):
         '''The market errors and the market clearing price for a given price vector'''
-        
         # Initial error values
         e1 = 10
         e2 = 10
@@ -176,7 +167,6 @@ class ExchangeEconomyClass:
 
     def plot_error(self, p1, N = 75):
         '''Plots all market errors for given prices'''
-
         # i. market erros from P_1
         N = N
         P_1 = np.linspace(1e-4, 3, N)
@@ -204,7 +194,6 @@ class ExchangeEconomyClass:
 
     def A_sets_price(self, P_1):
         '''Maximizes the utility of A when dictating the price'''
-
         uA_0 = -np.inf # Initial utility value
 
         for p1 in P_1:
@@ -225,7 +214,6 @@ class ExchangeEconomyClass:
     
     def A_sets_price_optimize(self):
         '''Optimizer to maximize utility of A when dictating the price'''
-
         # a. define objective function to minimize as a function of p
         obj = lambda p: -self.utility_A(1 - self.demand_B(p)[0], 1 - self.demand_B(p)[1]) 
 
@@ -242,7 +230,6 @@ class ExchangeEconomyClass:
     
     def plot_utility_A(self, P_1):
         '''Plots utility of A as well as maximum'''
-
         # Create an empty list to store the utility values
         utility_values = []
         A_sets_price = self.A_sets_price(P_1)
@@ -267,7 +254,6 @@ class ExchangeEconomyClass:
 
     def A_market_maker(self, N = 75):
         '''Maximize utility when A dictates consumption in C'''
-
         # Calls Pareto efficient commbinations
         kombinationer = self.paretoC(N)
 
@@ -286,7 +272,6 @@ class ExchangeEconomyClass:
     
     def A_market_maker_optimize(self):
         '''Calls optimizer utility of A with constraint that B at least gets endowment utility'''
-        
         # a. define objective function to minimize as a function of x1 and x2
         def value_of_choice(x):
             return -self.utility_A(x[0], x[1]) 
