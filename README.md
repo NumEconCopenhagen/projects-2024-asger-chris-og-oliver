@@ -3,7 +3,7 @@
 **Group members:**
 - Oliver Ouwei Ding (wgl247)
 - Christoffer Jackson (mjv474)
-- C
+- Asger Feldbæk Nielsen (cbv352)
 
 This repository contains  
 1. Inaugural project. 
