@@ -372,3 +372,42 @@ class ExchangeEconomyClass:
         ax_B.set_ylim([w2bar + 0.1, -0.1])
 
         ax_A.legend(frameon=True,bbox_to_anchor=(1.1,1.0));
+
+def market_equlibria(wlist, N = 2000):
+    '''Finds market equilibrium for given intial endowment'''
+    marketeq = ExchangeEconomyClass() # Define new exchange economy instance
+    N = N
+    P_1 = np.linspace(1e-10, 2.5, N)
+    x1_eq = []
+    x2_eq = []
+    p1_eq =[]
+    
+    #Initial large error
+    e1 = np.inf
+    e2 = np.inf
+
+    for i in range(len(wlist)):
+        for p1 in P_1:
+            # Changes initial endowment for each loop
+            marketeq.par.w1A = wlist[i][0] 
+            marketeq.par.w2A = wlist[i][1]
+            marketeq.par.w1B = 1 - marketeq.par.w1A
+            marketeq.par.w2B = 1 - marketeq.par.w2A
+
+            # Clear market
+            e1_now, e2_now = marketeq.check_market_clearing(p1)
+            if np.abs(e1_now) < np.abs(e1) and np.abs(e2_now) < np.abs(e2):
+                e1 = e1_now
+                e2 = e2_now
+                p1_best = p1
+        
+        # Reset e1 and e2       
+        e1 = np.inf
+        e2 = np.inf
+
+        #Append equilibriums
+        p1_eq.append(p1_best)
+        x1_eq.append(marketeq.demand_A(p1_best))
+        x2_eq.append(marketeq.demand_B(p1_best)) 
+        
+    return x1_eq, x2_eq, p1_eq
