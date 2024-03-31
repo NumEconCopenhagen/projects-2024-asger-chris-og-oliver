@@ -293,6 +293,26 @@ class ExchangeEconomyClass:
 
         return x1_best, x2_best, util_best
     
+    def social_planner(self):
+            '''Solves the problem of the social planner'''
+            
+            def sum_util(x): # Defines total utility of the economy
+                return -self.utility_A(x[0], x[1]) -self.utility_B(1 - x[0], 1 - x[1])
+            
+            # b. define bounds and restrictions
+            bounds = [(0, 1), (0, 1)]
+
+            # c. intitial guess and call optimizer
+            guess = [self.par.w1A, self.par.w2A]
+            result = optimize.minimize(sum_util, guess, bounds = bounds, method='SLSQP')
+
+            x1a_optimal = result.x[0] # x1A
+            x2a_optimal = result.x[1] # x2A
+            util_optimal_A = -result.fun
+            util_optimal_B = self.utility_B(1 - x1a_optimal, 1 - x2a_optimal)
+
+            return x1a_optimal, x2a_optimal, util_optimal_A, util_optimal_B
+    
     def plot_edgeworth2(self, N = 75, u_a = 0.5713, u_b = 0.4865, p1 = 0.9444):
         '''Plots edgeworth box with allocations from 3)-5), indifference curves and budget line'''
         plt.rcParams.update({"axes.grid":True,"grid.color":"black","grid.alpha":"0.25","grid.linestyle":"--"})
@@ -372,6 +392,11 @@ class ExchangeEconomyClass:
         ax_B.set_ylim([w2bar + 0.1, -0.1])
 
         ax_A.legend(frameon=True,bbox_to_anchor=(1.1,1.0));
+
+
+
+
+
 
 def market_equlibria(wlist, N = 2000):
     '''Finds market equilibrium for given intial endowment'''
