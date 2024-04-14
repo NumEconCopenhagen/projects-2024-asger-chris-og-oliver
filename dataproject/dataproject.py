@@ -166,6 +166,7 @@ class Dataproject:
 
     def plot_capm(mvp, etp, rf, lin_vec, portfolio, return_matrix, volatility_matrix, data):
         '''Plots the efficient frontier and the capital market line'''
+        # First, a figure and an axis are created for plotting.
         fig, ax = plt.subplots()
 
         # Empty vector to store frontier
