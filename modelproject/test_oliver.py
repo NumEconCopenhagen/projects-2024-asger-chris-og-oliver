@@ -1,14 +1,16 @@
 
-from types import SimpleNamespace
+from types import SimpleNamespace # import package SimpleNamespace. Allows for the creation of simple objects that can have arbitrary attributes set on them, making it useful for handling grouped data like parameters.
 
 import numpy as np
 
 class ASADClass:
 
-    def __init__(self):
+    def __init__(self): #Method called when an object is created from the class, and allows the class to initialize the attributes defined under __init__
         """ initialize the model """
-
-        par = self.par = SimpleNamespace() # parameters
+        #Self is a convention used to refer to the current instance of a class. When you define a method, uch as __init__ within a class, the first parameter is each method is typically named self.
+        # This parameter represents the instance of the class on which the method is being called.
+        # self is used to access or modify properties specific to the instance of the class, i.e. Oliver. When you create an instance of a class, python automatically passes the instance as the first argument to the method being called, and by convention, we capture that reference using self.
+        par = self.par = SimpleNamespace() # parameters. This SimpleNameSpace object stores parameters, the next holds variables during simulation, the next holds statistical moments caculated from data and lastly, moms holds moments calculated from the model.
         sim = self.sim = SimpleNamespace() # simulation variables
         datamoms = self.datamoms = SimpleNamespace() # moments in the data
         moms = self.moms = SimpleNamespace() # moments in the model
@@ -17,6 +19,8 @@ class ASADClass:
         par.alpha = 0.700 # slope of AD
         par.gamma = 0.075 # slope of SRAS
         par.phi = 0.99 # stickiness in expectations
+        par.h = 1.5 #reaction parameter of central bank for a given deviation of the inflation target (taylor principle parameter)
+        par.beta2 = 1.1 #parameter denoting the magnitude of the effect on output gap, from a deviation in real interest rate
 
         # b. parameters to be chosen (here guesses)
         par.delta = 0.80 # AR(1) of demand shock
@@ -31,6 +35,7 @@ class ASADClass:
         self.calc_compound_par()
 
         # e. simulation
+        # Arrays to hold simulation results are initialized to zero. 
         sim.y_hat = np.zeros(par.simT)
         sim.pi_hat = np.zeros(par.simT)
         sim.z = np.zeros(par.simT)
@@ -46,27 +51,28 @@ class ASADClass:
         datamoms.autocorr_pi = 0.48
 
     def calc_compound_par(self):
-        """ calculates compound parameters """
+        """ calculates new compound parameters """
 
         par = self.par
 
         par.a = (1+par.alpha*par.gamma*par.phi)/(1+par.alpha*par.gamma)
         par.beta = 1/(1+par.alpha*par.gamma)
+        par.beta_hat = par.beta+par.h*(par.beta/par.phi+par.beta2)
 
     def simulate(self):
         """ simulate the full model """
 
-        np.random.seed(1917)
+        np.random.seed(420)
 
         par = self.par
         sim = self.sim
 
         # a. draw random  shock innovations
-        sim.x = np.random.normal(loc=0.0,scale=par.sigma_x,size=par.simT)
+        sim.x = np.random.normal(loc=0.0,scale=par.sigma_x,size=par.simT) #Shock innovations are stored in the SimpleNameObject sim, under the name x
         sim.c = np.random.normal(loc=0.0,scale=par.sigma_c,size=par.simT)
 
         # b. period-by-period
-        for t in range(par.simT):
+        for t in range(par.simT): #simT=10.000
 
             # i. lagged
             if t == 0:
