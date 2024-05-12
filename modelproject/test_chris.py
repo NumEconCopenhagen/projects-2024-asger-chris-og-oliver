@@ -5,7 +5,7 @@ import numpy as np
 
 class ASADClass:
 
-    def __init__(self):
+    def __init__(self, fixed = True):
         """ initialize the model """
 
         par = self.par = SimpleNamespace() # parameters
@@ -14,11 +14,16 @@ class ASADClass:
         moms = self.moms = SimpleNamespace() # moments in the model
 
         # a. externally given parameters
-        par.alpha = 0.700 # slope of AD
+        par.beta = 0.700 # slope of AD
         par.gamma = 0.075 # slope of SRAS
-        par.phi = 0.99 # stickiness in expectations
+        par.beta_2 = 0.1 # Effect of interest rate on AD
+        par.theta = 0.1 # Adjustment expectations for reale exchange rate
+        if fixed == True:
+            par.h = 0
+        else:
+            par.h = 0.1 # Centralbanks Reponse to inflationsgap
 
-        # b. parameters to be chosen (here guesses)
+        # b. parameters to be chosen (guesses)
         par.delta = 0.80 # AR(1) of demand shock
         par.omega = 0.15 # AR(1) of supply shock
         par.sigma_x = 1.0 # std. of demand shock
@@ -49,9 +54,8 @@ class ASADClass:
         """ calculates compound parameters """
 
         par = self.par
-
-        par.a = (1+par.alpha*par.gamma*par.phi)/(1+par.alpha*par.gamma)
-        par.beta = 1/(1+par.alpha*par.gamma)
+        par.b = par.beta + par.h*(par.beta/par.theta+par.beta_2)
+        par.a = 1/(1+par.b*par.gamma)
 
     def simulate(self):
         """ simulate the full model """
@@ -85,11 +89,9 @@ class ASADClass:
             s = sim.s[t] = par.omega*s_lag + sim.c[t]
 
             # iii. output and inflation
-            sim.y_hat[t] = par.a*y_hat_lag + par.beta*(z-z_lag) \
-                - par.alpha*par.beta*s + par.alpha*par.beta*par.phi*s_lag
-            sim.pi_hat[t] = par.a*pi_hat_lag + par.gamma*par.beta*z \
-                - par.gamma*par.beta*par.phi*z_lag + par.beta*s - par.beta*par.phi*s_lag
-            
+            sim.y_hat[t] = par.a*y_hat_lag + par.a*(z-z_lag) - par.b*par.a*s
+            sim.pi_hat[t] = par.a*pi_hat_lag + par.a*(s-s_lag) + par.gamma*par.a*(z-z_lag)
+
     def calc_moms(self):
         """ calculate moments """
 
@@ -153,11 +155,10 @@ class ASADClass:
                 pi_hat_lag = 0.0
                 z = sim.z[t] = par.delta*z_lag + z_shock
                 s = sim.s[t] = par.omega*s_lag + s_shock
-                sim.y_hat[t] = par.a*y_hat_lag + par.beta*(z-z_lag) \
-                - par.alpha*par.beta*s + par.alpha*par.beta*par.phi*s_lag
-                sim.pi_hat[t] = par.a*pi_hat_lag + par.gamma*par.beta*z \
-                - par.gamma*par.beta*par.phi*z_lag + par.beta*s - par.beta*par.phi*s_lag
-                  
+
+                sim.y_hat[t] = par.a*y_hat_lag + par.a*(z-z_lag) - par.b*par.a*s
+                sim.pi_hat[t] = par.a*pi_hat_lag + par.a*(s-s_lag) + par.gamma*par.a*(z-z_lag)
+
             else:
                 z_lag = sim.z[t-1]
                 s_lag = sim.s[t-1]
@@ -165,8 +166,5 @@ class ASADClass:
                 pi_hat_lag = sim.pi_hat[t-1]
                 z = sim.z[t] = par.delta*z_lag
                 s = sim.s[t] = par.omega*s_lag
-                sim.y_hat[t] = par.a*y_hat_lag + par.beta*(z-z_lag) \
-                - par.alpha*par.beta*s + par.alpha*par.beta*par.phi*s_lag
-                sim.pi_hat[t] = par.a*pi_hat_lag + par.gamma*par.beta*z \
-                - par.gamma*par.beta*par.phi*z_lag + par.beta*s - par.beta*par.phi*s_lag
-                  
+                sim.y_hat[t] = par.a*y_hat_lag + par.a*(z-z_lag) - par.b*par.a*s
+                sim.pi_hat[t] = par.a*pi_hat_lag + par.a*(s-s_lag) + par.gamma*par.a*(z-z_lag)
