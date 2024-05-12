@@ -54,8 +54,9 @@ class ASADClass:
         """ calculates compound parameters """
 
         par = self.par
-        par.b = par.beta + par.h*(par.beta/par.theta+par.beta_2)
-        par.a = 1/(1+par.b*par.gamma)
+        par.beta_hat = par.beta + par.h*(par.beta/par.theta+par.beta_2)
+        par.a = 1/(1+par.beta_hat*par.gamma)
+        par.b = par.gamma*(par.beta_hat-par.beta)
 
     def simulate(self):
         """ simulate the full model """
@@ -89,8 +90,8 @@ class ASADClass:
             s = sim.s[t] = par.omega*s_lag + sim.c[t]
 
             # iii. output and inflation
-            sim.y_hat[t] = par.a*(1+par.gamma*(par.b - par.beta))*y_hat_lag + par.a*(z-z_lag) - par.b*par.a*(s-s_lag*(1-par.beta/par.b))
-            sim.pi_hat[t] = par.a*(1+par.gamma*(par.b-par.beta))*pi_hat_lag + par.a*(s-s_lag) + par.gamma*par.a*(z-z_lag)
+            sim.y_hat[t] = par.a*(1+par.b)*y_hat_lag + par.a*(z-z_lag) - par.a*(par.beta_hat*s-s_lag*(par.beta_hat-par.beta))
+            sim.pi_hat[t] = par.a*(1+par.b)*pi_hat_lag + par.a*(s-s_lag) + par.a*par.gamma*(z-z_lag)
 
 
     def calc_moms(self):
@@ -156,10 +157,10 @@ class ASADClass:
                 pi_hat_lag = 0.0
                 z = sim.z[t] = par.delta*z_lag + z_shock
                 s = sim.s[t] = par.omega*s_lag + s_shock
-
-                sim.y_hat[t] = par.a*(1+par.gamma*(par.b - par.beta))*y_hat_lag + par.a*(z-z_lag) - par.b*par.a*(s-s_lag*(1-par.beta/par.b))
-                sim.pi_hat[t] = par.a*(1+par.gamma*(par.b-par.beta))*pi_hat_lag + par.a*(s-s_lag) + par.gamma*par.a*(z-z_lag)
-
+                
+                sim.y_hat[t] = par.a*(1+par.b)*y_hat_lag + par.a*(z-z_lag) - par.a*(par.beta_hat*s-s_lag*(par.beta_hat-par.beta))
+                sim.pi_hat[t] = par.a*(1+par.b)*pi_hat_lag + par.a*(s-s_lag) + par.a*par.gamma*(z-z_lag)
+         
             else:
                 z_lag = sim.z[t-1]
                 s_lag = sim.s[t-1]
@@ -167,5 +168,5 @@ class ASADClass:
                 pi_hat_lag = sim.pi_hat[t-1]
                 z = sim.z[t] = par.delta*z_lag
                 s = sim.s[t] = par.omega*s_lag
-                sim.y_hat[t] = par.a*(1+par.gamma*(par.b - par.beta))*y_hat_lag + par.a*(z-z_lag) - par.b*par.a*(s-s_lag*(1-par.beta/par.b))
-                sim.pi_hat[t] = par.a*(1+par.gamma*(par.b-par.beta))*pi_hat_lag + par.a*(s-s_lag) + par.gamma*par.a*(z-z_lag)
+                sim.y_hat[t] = par.a*(1+par.b)*y_hat_lag + par.a*(z-z_lag) - par.a*(par.beta_hat*s-s_lag*(par.beta_hat-par.beta))
+                sim.pi_hat[t] = par.a*(1+par.b)*pi_hat_lag + par.a*(s-s_lag) + par.a*par.gamma*(z-z_lag)
