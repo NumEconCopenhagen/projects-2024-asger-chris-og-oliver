@@ -21,7 +21,7 @@ class ASADClass:
         if fixed == True:
             par.h = 0
         else:
-            par.h = 0.1 # Centralbanks Reponse to inflationsgap
+            par.h = 0.5 # Centralbanks Reponse to inflationsgap
 
         # b. parameters to be chosen (guesses)
         par.delta = 0.80 # AR(1) of demand shock
@@ -89,8 +89,9 @@ class ASADClass:
             s = sim.s[t] = par.omega*s_lag + sim.c[t]
 
             # iii. output and inflation
-            sim.y_hat[t] = par.a*y_hat_lag + par.a*(z-z_lag) - par.b*par.a*s
-            sim.pi_hat[t] = par.a*pi_hat_lag + par.a*(s-s_lag) + par.gamma*par.a*(z-z_lag)
+            sim.y_hat[t] = par.a*(1+par.gamma*(par.b - par.beta))*y_hat_lag + par.a*(z-z_lag) - par.b*par.a*(s-s_lag*(1-par.beta/par.b))
+            sim.pi_hat[t] = par.a*(1+par.gamma*(par.b-par.beta))*pi_hat_lag + par.a*(s-s_lag) + par.gamma*par.a*(z-z_lag)
+
 
     def calc_moms(self):
         """ calculate moments """
@@ -156,8 +157,8 @@ class ASADClass:
                 z = sim.z[t] = par.delta*z_lag + z_shock
                 s = sim.s[t] = par.omega*s_lag + s_shock
 
-                sim.y_hat[t] = par.a*y_hat_lag + par.a*(z-z_lag) - par.b*par.a*s
-                sim.pi_hat[t] = par.a*pi_hat_lag + par.a*(s-s_lag) + par.gamma*par.a*(z-z_lag)
+                sim.y_hat[t] = par.a*(1+par.gamma*(par.b - par.beta))*y_hat_lag + par.a*(z-z_lag) - par.b*par.a*(s-s_lag*(1-par.beta/par.b))
+                sim.pi_hat[t] = par.a*(1+par.gamma*(par.b-par.beta))*pi_hat_lag + par.a*(s-s_lag) + par.gamma*par.a*(z-z_lag)
 
             else:
                 z_lag = sim.z[t-1]
@@ -166,5 +167,5 @@ class ASADClass:
                 pi_hat_lag = sim.pi_hat[t-1]
                 z = sim.z[t] = par.delta*z_lag
                 s = sim.s[t] = par.omega*s_lag
-                sim.y_hat[t] = par.a*y_hat_lag + par.a*(z-z_lag) - par.b*par.a*s
-                sim.pi_hat[t] = par.a*pi_hat_lag + par.a*(s-s_lag) + par.gamma*par.a*(z-z_lag)
+                sim.y_hat[t] = par.a*(1+par.gamma*(par.b - par.beta))*y_hat_lag + par.a*(z-z_lag) - par.b*par.a*(s-s_lag*(1-par.beta/par.b))
+                sim.pi_hat[t] = par.a*(1+par.gamma*(par.b-par.beta))*pi_hat_lag + par.a*(s-s_lag) + par.gamma*par.a*(z-z_lag)
