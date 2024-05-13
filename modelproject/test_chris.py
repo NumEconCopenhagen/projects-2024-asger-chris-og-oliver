@@ -21,7 +21,7 @@ class ASADClass:
         if fixed == True:
             par.h = 0
         else:
-            par.h = 1.2 # Centralbanks Reponse to inflationsgap
+            par.h = 0.5 # Centralbanks Reponse to inflationsgap
 
         # b. parameters to be chosen (guesses)
         par.delta = 0.80 # AR(1) of demand shock
@@ -30,7 +30,7 @@ class ASADClass:
         par.sigma_c = 0.2 # st.d of supply shock
 
         # c. misc paramters
-        par.simT = 30_000 # length of simulation
+        par.simT = 10_000 # length of simulation
 
         # d. calculate compound parameters
         self.calc_compound_par()
