@@ -16,11 +16,11 @@ class ASADClass:
         moms = self.moms = SimpleNamespace() # moments in the model
 
         # a. externally given parameters
-        par.alpha = 0.700 # slope of AD
+        #par.alpha = 0.700 # slope of AD
         par.gamma = 0.075 # slope of SRAS
-        par.phi = 0.99 # stickiness in expectations
-        par.h = 0.3 #reaction parameter of central bank for a given deviation of the inflation target (taylor principle parameter)
-        par.beta1 = 0.4 #parameter denoting the magnitude of the effect on output gap, from a deviation in real exchange rate. Set arbitrarily, can be changed
+        par.phi = 0.1 # stickiness in expectations
+        par.h = 0.5 #reaction parameter of central bank for a given deviation of the inflation target (taylor principle parameter)
+        par.beta1 = 0.7 #parameter denoting the magnitude of the effect on output gap, from a deviation in real exchange rate. Set arbitrarily, can be changed
         par.beta2 = 0.1 #parameter denoting the magnitude of the effect on output gap, from a deviation in real interest rate. Set arbitrarily, can be changed
 
         # b. parameters to be chosen (here guesses)
@@ -58,9 +58,9 @@ class ASADClass:
 
         par = self.par
 
-        par.a = 1/(1+par.beta1*par.gamma)
         #par.beta1_hat = 0.8 #arbitræt sat
         par.beta1_hat = par.beta1+par.h*(par.beta1/par.phi+par.beta2)
+        par.a = 1/(1+par.beta1_hat*par.gamma)
         par.b = par.gamma*(par.beta1_hat-par.beta1)
 
     def simulate_fixed(self):
@@ -132,7 +132,7 @@ class ASADClass:
 
             # iii. output and inflation
             sim.y_hat_floating[t] = par.a*(1+par.b)*y_hat_lag + par.a*(z-z_lag) \
-                - par.a*par.beta1_hat*s + par.alpha*s_lag*(par.beta1_hat-par.beta1)
+                - par.a*par.beta1_hat*s + par.a*s_lag*(par.beta1_hat-par.beta1)
             sim.pi_hat_floating[t] = par.a*(1+par.b)*pi_hat_lag + par.a*(s-s_lag)+par.a*par.gamma*(z-z_lag)
             
     def calc_moms(self):
