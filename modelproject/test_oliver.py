@@ -19,8 +19,9 @@ class ASADClass:
         par.alpha = 0.700 # slope of AD
         par.gamma = 0.075 # slope of SRAS
         par.phi = 0.99 # stickiness in expectations
-        par.h = 1.5 #reaction parameter of central bank for a given deviation of the inflation target (taylor principle parameter)
-        par.beta2 = 1.1 #parameter denoting the magnitude of the effect on output gap, from a deviation in real interest rate
+        par.h = 1.2 #reaction parameter of central bank for a given deviation of the inflation target (taylor principle parameter)
+        par.beta1 = 0.4 #parameter denoting the magnitude of the effect on output gap, from a deviation in real exchange rate. Set arbitrarily, can be changed
+        par.beta2 = 0.1 #parameter denoting the magnitude of the effect on output gap, from a deviation in real interest rate. Set arbitrarily, can be changed
 
         # b. parameters to be chosen (here guesses)
         par.delta = 0.80 # AR(1) of demand shock
@@ -36,8 +37,10 @@ class ASADClass:
 
         # e. simulation
         # Arrays to hold simulation results are initialized to zero. 
-        sim.y_hat = np.zeros(par.simT)
-        sim.pi_hat = np.zeros(par.simT)
+        sim.y_hat_fixed = np.zeros(par.simT)
+        sim.pi_hat_fixed = np.zeros(par.simT)
+        sim.y_hat_floating = np.zeros(par.simT)
+        sim.pi_hat_floating = np.zeros(par.simT)
         sim.z = np.zeros(par.simT)
         sim.x = np.zeros(par.simT)
         sim.s = np.zeros(par.simT)
@@ -55,11 +58,12 @@ class ASADClass:
 
         par = self.par
 
-        par.a = (1+par.alpha*par.gamma*par.phi)/(1+par.alpha*par.gamma)
-        par.beta = 1/(1+par.alpha*par.gamma)
-        par.beta_hat = par.beta+par.h*(par.beta/par.phi+par.beta2)
+        par.a = 1/(1+par.beta1*par.gamma)
+        #par.beta1_hat = 0.6 #arbitræt sat
+        par.beta1_hat = par.beta1+par.h*(par.beta1/par.phi+par.beta2)
+        par.b = par.gamma*(par.beta1_hat-par.beta1)
 
-    def simulate(self):
+    def simulate_fixed(self):
         """ simulate the full model """
 
         np.random.seed(420)
@@ -83,18 +87,53 @@ class ASADClass:
             else:
                 z_lag = sim.z[t-1]
                 s_lag = sim.s[t-1]
-                y_hat_lag = sim.y_hat[t-1]
-                pi_hat_lag = sim.pi_hat[t-1]
+                y_hat_lag = sim.y_hat_fixed[t-1]
+                pi_hat_lag = sim.pi_hat_fixed[t-1]
 
             # ii. AR(1) shocks
             z = sim.z[t] = par.delta*z_lag + sim.x[t]
             s = sim.s[t] = par.omega*s_lag + sim.c[t]
 
             # iii. output and inflation
-            sim.y_hat[t] = par.a*y_hat_lag + par.beta*(z-z_lag) \
-                - par.alpha*par.beta*s + par.alpha*par.beta*par.phi*s_lag
-            sim.pi_hat[t] = par.a*pi_hat_lag + par.gamma*par.beta*z \
-                - par.gamma*par.beta*par.phi*z_lag + par.beta*s - par.beta*par.phi*s_lag
+            sim.y_hat_fixed[t] = par.a*y_hat_lag + par.a*(z-z_lag) \
+                - par.a*par.beta1*s 
+            sim.pi_hat_fixed[t] = par.a*pi_hat_lag + par.a*(s-s_lag)+par.a*par.gamma*(z-z_lag)
+
+    def simulate_floating(self):
+        """ simulate the full model """
+
+        np.random.seed(420)
+
+        par = self.par
+        sim = self.sim
+
+        # a. draw random  shock innovations
+        sim.x = np.random.normal(loc=0.0,scale=par.sigma_x,size=par.simT) #Shock innovations are stored in the SimpleNameObject sim, under the name x
+        sim.c = np.random.normal(loc=0.0,scale=par.sigma_c,size=par.simT)
+
+        # b. period-by-period
+        for t in range(par.simT): #simT=10.000
+
+            # i. lagged
+            if t == 0:
+                z_lag = 0.0
+                s_lag = 0.0
+                y_hat_lag = 0.0
+                pi_hat_lag = 0.0
+            else:
+                z_lag = sim.z[t-1]
+                s_lag = sim.s[t-1]
+                y_hat_lag = sim.y_hat_floating[t-1]
+                pi_hat_lag = sim.pi_hat_floating[t-1]
+
+            # ii. AR(1) shocks
+            z = sim.z[t] = par.delta*z_lag + sim.x[t]
+            s = sim.s[t] = par.omega*s_lag + sim.c[t]
+
+            # iii. output and inflation
+            sim.y_hat_floating[t] = par.a*(1+par.b)*y_hat_lag + par.a*(z-z_lag) \
+                - par.a*par.beta1_hat*s + par.alpha*s_lag*(par.beta1_hat-par.beta1)
+            sim.pi_hat_floating[t] = par.a*(1+par.b)*pi_hat_lag + par.a*(s-s_lag)+par.a*par.gamma*(z-z_lag)
             
     def calc_moms(self):
         """ calculate moments """
