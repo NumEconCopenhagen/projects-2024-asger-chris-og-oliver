@@ -19,7 +19,7 @@ class ASADClass:
         par.alpha = 0.700 # slope of AD
         par.gamma = 0.075 # slope of SRAS
         par.phi = 0.99 # stickiness in expectations
-        par.h = 1.2 #reaction parameter of central bank for a given deviation of the inflation target (taylor principle parameter)
+        par.h = 0.3 #reaction parameter of central bank for a given deviation of the inflation target (taylor principle parameter)
         par.beta1 = 0.4 #parameter denoting the magnitude of the effect on output gap, from a deviation in real exchange rate. Set arbitrarily, can be changed
         par.beta2 = 0.1 #parameter denoting the magnitude of the effect on output gap, from a deviation in real interest rate. Set arbitrarily, can be changed
 
@@ -30,7 +30,7 @@ class ASADClass:
         par.sigma_c = 0.2 # st.d of supply shock
 
         # c. misc paramters
-        par.simT = 10_000 # length of simulation
+        par.simT = 30_000 # length of simulation
 
         # d. calculate compound paramters
         self.calc_compound_par()
@@ -59,7 +59,7 @@ class ASADClass:
         par = self.par
 
         par.a = 1/(1+par.beta1*par.gamma)
-        #par.beta1_hat = 0.6 #arbitræt sat
+        #par.beta1_hat = 0.8 #arbitræt sat
         par.beta1_hat = par.beta1+par.h*(par.beta1/par.phi+par.beta2)
         par.b = par.gamma*(par.beta1_hat-par.beta1)
 
