@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 class ASADClass:
 
-    def __init__(self, fixed = True):
+    def __init__(self, floating = True):
         """ initialize the model """
 
         par = self.par = SimpleNamespace() # parameters
@@ -15,14 +15,14 @@ class ASADClass:
         moms = self.moms = SimpleNamespace() # moments in the model
 
         # a. externally given parameters
-        par.beta = 0.700 # slope of AD
+        par.beta_1 = 0.700 # slope of AD
         par.gamma = 0.075 # slope of SRAS
         par.beta_2 = 0.1 # Effect of interest rate on AD
-        par.theta = 0.1 # Adjustment expectations for reale exchange rate
-        if fixed == True:
-            par.h = 0
+        par.theta = 0.9 # Adjustment expectations for real exchange rate
+        if floating == True:
+            par.h = 0.5 # Central banks inflation targeting
         else:
-            par.h = 0.5 # Centralbanks Reponse to inflationsgap
+            par.h = 0 # Fixed exchange rate economy
 
         # b. parameters to be chosen (guesses)
         par.delta = 0.80 # AR(1) of demand shock
@@ -55,9 +55,9 @@ class ASADClass:
         """ calculates compound parameters """
 
         par = self.par
-        par.beta_hat = par.beta + par.h*(par.beta/par.theta+par.beta_2)
+        par.beta_hat = par.beta_1 + par.h*(par.beta_1/par.theta+par.beta_2)
         par.a = 1/(1+par.beta_hat*par.gamma)
-        par.b = par.gamma*(par.beta_hat-par.beta)
+        par.b = par.beta_1*(1 + par.h/par.theta)
 
     def simulate(self):
         """ simulate the full model """
@@ -91,8 +91,8 @@ class ASADClass:
             s = sim.s[t] = par.omega*s_lag + sim.c[t]
 
             # iii. output and inflation
-            sim.y_hat[t] = par.a*(1+par.b)*y_hat_lag + par.a*(z-z_lag) - par.a*(par.beta_hat*s-s_lag*(par.beta_hat-par.beta))
-            sim.pi_hat[t] = par.a*(1+par.b)*pi_hat_lag + par.a*(s-s_lag) + par.a*par.gamma*(z-z_lag)
+            sim.y_hat[t] = (1-par.a*par.b*par.gamma)*y_hat_lag + par.a*(z-z_lag) - par.a*(par.beta_hat*s-s_lag*(par.beta_hat-par.b))
+            sim.pi_hat[t] = (1-par.a*par.b*par.gamma)*pi_hat_lag + par.a*par.gamma*(s-s_lag) + par.a*par.gamma*(z-z_lag)
 
 
     def calc_moms(self):
@@ -127,7 +127,7 @@ class ASADClass:
 
         return error
     
-    def impulse_response(self, demand = True, supply = False):
+    def impulse_response(self, demand=False, supply=False):
         """ simulate with or without a shock """
         np.random.seed(2024)
 
@@ -136,13 +136,13 @@ class ASADClass:
 
         # a. shock demand or supply in period 0
         if demand == True:
-            z_shock = 10
+            z_shock = 5
         else:
             z_shock = 0
 
         
         if supply == True:
-            s_shock = 10
+            s_shock = 5
         else:
             s_shock = 0
 
@@ -158,10 +158,9 @@ class ASADClass:
                 pi_hat_lag = 0.0
                 z = sim.z[t] = par.delta*z_lag + z_shock
                 s = sim.s[t] = par.omega*s_lag + s_shock
-                
-                sim.y_hat[t] = par.a*(1+par.b)*y_hat_lag + par.a*(z-z_lag) - par.a*(par.beta_hat*s-s_lag*(par.beta_hat-par.beta))
-                sim.pi_hat[t] = par.a*(1+par.b)*pi_hat_lag + par.a*(s-s_lag) + par.a*par.gamma*(z-z_lag)
-         
+                sim.y_hat[t] = (1-par.a*par.b*par.gamma)*y_hat_lag + par.a*(z-z_lag) - par.a*(par.beta_hat*s-s_lag*(par.beta_hat-par.b))
+                sim.pi_hat[t] = (1-par.a*par.b*par.gamma)*pi_hat_lag + par.a*par.gamma*(s-s_lag) + par.a*par.gamma*(z-z_lag)
+
             else:
                 z_lag = sim.z[t-1]
                 s_lag = sim.s[t-1]
@@ -169,5 +168,5 @@ class ASADClass:
                 pi_hat_lag = sim.pi_hat[t-1]
                 z = sim.z[t] = par.delta*z_lag
                 s = sim.s[t] = par.omega*s_lag
-                sim.y_hat[t] = par.a*(1+par.b)*y_hat_lag + par.a*(z-z_lag) - par.a*(par.beta_hat*s-s_lag*(par.beta_hat-par.beta))
-                sim.pi_hat[t] = par.a*(1+par.b)*pi_hat_lag + par.a*(s-s_lag) + par.a*par.gamma*(z-z_lag)
+                sim.y_hat[t] = (1-par.a*par.b*par.gamma)*y_hat_lag + par.a*(z-z_lag) - par.a*(par.beta_hat*s-s_lag*(par.beta_hat-par.b))
+                sim.pi_hat[t] = (1-par.a*par.b*par.gamma)*pi_hat_lag + par.a*par.gamma*(s-s_lag) + par.a*par.gamma*(z-z_lag)
