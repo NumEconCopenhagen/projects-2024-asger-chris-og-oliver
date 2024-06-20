@@ -308,10 +308,11 @@ class ExchangeEconomyClass:
 
             x1a_optimal = result.x[0] # x1A
             x2a_optimal = result.x[1] # x2A
-            util_optimal_A = -result.fun
+            util_optimal_A = self.utility_A(x1a_optimal, x2a_optimal)
             util_optimal_B = self.utility_B(1 - x1a_optimal, 1 - x2a_optimal)
+            util_sum = -result.fun
 
-            return x1a_optimal, x2a_optimal, util_optimal_A, util_optimal_B
+            return x1a_optimal, x2a_optimal, util_optimal_A, util_optimal_B, util_sum
     
     def plot_edgeworth2(self, N = 75, u_a = 0.5713, u_b = 0.4865, p1 = 0.9444):
         '''Plots edgeworth box with allocations from 3)-5), indifference curves and budget line'''
