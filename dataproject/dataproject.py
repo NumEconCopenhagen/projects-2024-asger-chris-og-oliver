@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import optimize
 
-class Dataproject:
+class DataProject:
     
     def beta_table(results):
     # For this function to work, we have to have a 'results' table as an input, containing key-value pairs, where the key is the name of the object and each value is a regression result object, such as beta or a t-statistic.
