@@ -64,6 +64,7 @@ def career_simulation(i):
     return results
 
 def career_simulation_new(i):
+    '''Career choice simulation with learning and switching'''
     results = []
     i = i
     
@@ -102,7 +103,7 @@ def career_simulation_new(i):
         realized_j = u_i[j_max-1]
 
         # ---------------
-        # Learning and switch
+        # Learning and switching
 
         # New utilities
         if j_max == 1:

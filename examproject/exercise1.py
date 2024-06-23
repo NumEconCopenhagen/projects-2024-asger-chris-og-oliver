@@ -20,7 +20,6 @@ class ProductionEconomy:
 
         # government
         par.tau = 0.0
-        par.T = 0.0
 
         # Question 3
         par.kappa = 0.1
@@ -148,15 +147,12 @@ class ProductionEconomy:
 
         # 5. Plot the errors against p1 in the same diagram
         plt.figure(figsize=(10, 6))
-
-        # Plotting errors
         plt.plot(p1_vec, e1_vals, label='l_eps', color='b')
         plt.plot(p1_vec, e2_vals, label='c1_eps', color='g')
         plt.plot(p1_vec, e3_vals, label='c2_eps', color='r')
 
         # Add a horizontal line at y=0
         plt.axhline(0, color='black', linestyle='--', linewidth=1)
-
         plt.xlabel('p1')
         plt.ylabel('Market error')
         plt.ylim(-1, 1)
@@ -186,15 +182,23 @@ class ProductionEconomy:
         return p1_opt, p2_opt  
     
     def SWF_equilibrium(self, tax):
+        '''Finds market equilibrium and calcculates social welfare for given tax'''
+
+        # Update the tau in our parameter space
         par = self.par
         par.tau = tax
         
+        # Find market equilibrium with given tax
         p1_opt, p2_opt = self.market_equilibrium()
         l = self.l_star(p1_opt, p2_opt)
 
+        # Optimal consumption in period 2 at market equilibrium
         c2_star = self.c2(l, p1_opt, p2_opt)
+
+        # Calculates implied T
         par.T = par.tau*c2_star
 
+        # Social welfare utility
         SWF_util = self.utility(l, p1_opt, p2_opt) - par.kappa * self.y_2(p2_opt)
 
         return SWF_util

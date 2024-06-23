@@ -3,7 +3,7 @@ from scipy import optimize
 import matplotlib.pyplot as plt  
 
 def find_ABCD(X, y):
-
+    '''Finds points A, B, C and D and puts them triangles'''
     # Objective function to measure point distance
     dist = lambda x: np.sqrt((x[0]-y[0])**2 + (x[1]-y[1])**2)
 
@@ -134,12 +134,14 @@ def find_nan(X, y):
     return x1_A, x2_A, x1_B, x2_B, x1_C, x2_C, x1_D, x2_D, ABC, CDA
 
 def plt_nan(X, Y, x1_A, x2_A, x1_B, x2_B, x1_C, x2_C, x1_D, x2_D, ABC, CDA):
+    '''Plots points and draws triangle'''
     plt.figure(figsize=(6, 6))
     plt.scatter(X[:, 0], X[:, 1], color='grey', marker='o', label="X")
 
     plt.scatter(Y[2][0], Y[2][1], color='red', marker='o', label="Y[2]")
     plt.annotate('Y[2]', (Y[2][0], Y[2][1]), textcoords="offset points", xytext=(15, -2), ha='center')
 
+    # A is NaN so nothing is plotted
     plt.scatter(x1_A, x2_A, color='blue', marker='x', label="A")
     plt.annotate('A', (x1_A, x2_A), textcoords="offset points", xytext=(7.5,5), ha='center')
 
