@@ -170,3 +170,68 @@ class ASADClass:
                 s = sim.s[t] = par.omega*s_lag
                 sim.y_hat[t] = (1-par.a*par.b*par.gamma)*y_hat_lag + par.a*(z-z_lag) - par.a*(par.beta_hat*s-s_lag*(par.beta_hat-par.b))
                 sim.pi_hat[t] = (1-par.a*par.b*par.gamma)*pi_hat_lag + par.a*par.gamma*(s-s_lag) + par.a*par.gamma*(z-z_lag)
+
+
+def plot_ASAD(t=0, demand=True):
+    '''Function to plot AS-AD model'''
+    # Given parameters
+    y_bar = 2
+    pi_bar = 2
+
+    beta_1 = 0.700  # slope of AD
+    gamma = 0.075     # slope of SRAS
+    beta_2 = 0.1    # Effect of interest rate on AD
+    theta = 0.9     # Adjustment expectations for real exchange rate
+    h = 0.5         # Centralbank's response to inflation gap
+    beta1_hat = beta_1 + h * (beta_1 / theta + beta_2)
+
+    y = np.linspace(-10, 10, 1000)
+    
+    # Initial period (t=0)
+    er_0 = 0
+    z_0 = 0
+    s_0 = 0
+    pi_AD_0 = pi_bar + beta_1 / beta1_hat * er_0 - 1 / beta_1 * (y - y_bar) + z_0 / beta_1  # AD
+    pi_AS_0 = pi_bar + gamma * (y - y_bar) + s_0  # AS
+    intersection_index_0 = np.argmin(np.abs(pi_AD_0 - pi_AS_0))
+    
+    pi_AD_list = [pi_AD_0]
+    pi_AS_list = [pi_AS_0]
+    er_list = [er_0]
+    
+    # Demand or supply shock parameters
+    z = 5 if demand else 0
+    s = 0 if demand else 5
+    #delta, omega, sigma_x, sigma_c = res.x  # AR(1) rates that is previously calibrated
+
+    for period in range(1, t + 1):
+        z *= 0.87  # Demand shock gradually decays
+        s *= 0.87  # Supply shock gradually decays
+
+        er_prev = er_list[-1]
+        pi_AS_prev = pi_AS_list[-1]
+        intersection_index_prev = np.argmin(np.abs(pi_AD_list[-1] - pi_AS_prev))
+        
+        if demand:
+            er_current = er_prev - pi_AS_prev[intersection_index_prev] + pi_bar  # ER
+            pi_AD_current = pi_bar + beta_1 / beta1_hat * er_current - 1 / beta_1 * (y - y_bar) + z / beta_1  # AD
+            pi_AD_list.append(pi_AD_current)
+            er_list.append(er_current)
+        
+        pi_AS_current = pi_bar + gamma * (y - y_bar) + s  # AS
+        pi_AS_list.append(pi_AS_current)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(y, pi_AD_0, linestyle="-", label="$AD_{t-0}$", color="blue")
+    plt.plot(y, pi_AS_0, linestyle="-", label="$AS_{t-0}$", color="darkorange")
+
+    for period in range(1, t + 1):
+        if demand:
+            plt.plot(y, pi_AD_list[period], label=f"AD$_{{t+{period}}}$", color="blue")
+        plt.plot(y, pi_AS_list[period], label=f"AS$_{{t+{period}}}$", color="darkorange")
+    
+    plt.axvline(x=y_bar, color='red', linestyle='--', label='LRAS')
+    plt.xlabel('Real GDP')
+    plt.ylabel('Price Level')
+    plt.legend()
+    plt.title('AS-AD Diagram')
