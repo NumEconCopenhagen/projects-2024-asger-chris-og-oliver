@@ -6,7 +6,7 @@ from scipy import optimize
 
 class DataProject:
     
-    def beta_table(results):
+    def beta_table(self, results):
     # For this function to work, we have to have a 'results' table as an input, containing key-value pairs, where the key is the name of the object and each value is a regression result object, such as beta or a t-statistic.
     
     # Dictionary to save beta values
@@ -39,7 +39,7 @@ class DataProject:
 
         return beta_table
 
-    def mvp_w(portfolio):
+    def mvp_w(self, portfolio):
         '''Calculates the weights for the minimum variance portfolio'''
 
         # a. define function for volatility to minimize as a function of w1 and w2
@@ -59,7 +59,7 @@ class DataProject:
 
         return w1_min, w2_min, min_vol
     
-    def plot_variance(portfolio, mvp_w, delta=0.5):
+    def plot_variance(self, portfolio, mvp_w, delta=0.5):
         '''Plots variance as a function of the first weight, white holding w2 semi-fixed'''
 
         # Generate weight values
@@ -103,7 +103,7 @@ class DataProject:
         ax.set_ylim(5, 8)
         plt.show()    
 
-    def etp_w(sharpe_ratio, rf=0):
+    def etp_w(self, sharpe_ratio, rf=0):
         '''Calculates weights for efficient tangent portfolio'''
 
         # a. define Sharpe ratio function to maximize as a function of w1 and w2
@@ -123,7 +123,7 @@ class DataProject:
 
         return w1_etp, w2_etp, etp_sharp        
     
-    def plot_sharp(sharpe_ratio, etp_w, rf, delta=0.5):
+    def plot_sharp(self, sharpe_ratio, etp_w, rf, delta=0.5):
         '''Plots Sharpe ratios and the efficient tangent portfolio'''
 
         # Generate the values for w1
@@ -164,7 +164,7 @@ class DataProject:
         ax.set_ylim(0.3, .62)
         plt.show()
 
-    def plot_capm(mvp, etp, rf, lin_vec, portfolio, return_matrix, volatility_matrix, data):
+    def plot_capm(self, mvp, etp, rf, lin_vec, portfolio, return_matrix, volatility_matrix, data):
         '''Plots the efficient frontier and the capital market line'''
         # First, a figure and an axis are created for plotting.
         fig, ax = plt.subplots()
