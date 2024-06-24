@@ -44,7 +44,7 @@ class ASADClass:
         sim.s = np.zeros(par.simT)
         sim.c = np.zeros(par.simT)
 
-        # f. data (numbers given in notebook)
+        # f. data (numbers given in Macro)
         datamoms.std_y = 1.64
         datamoms.std_pi = 0.21
         datamoms.corr_y_pi = 0.31
@@ -119,7 +119,7 @@ class ASADClass:
         for k in self.datamoms.__dict__.keys():
 
             diff = datamoms.__dict__[k]-moms.__dict__[k]
-            error += diff**2
+            error += np.abs(diff)
 
             if do_print: print(f'{k:12s}| data = {datamoms.__dict__[k]:.4f}, model = {moms.__dict__[k]:.4f}')
 
@@ -172,7 +172,7 @@ class ASADClass:
                 sim.pi_hat[t] = (1-par.a*par.b*par.gamma)*pi_hat_lag + par.a*par.gamma*(s-s_lag) + par.a*par.gamma*(z-z_lag)
 
 
-def plot_ASAD(t=0, demand=True):
+def plot_ASAD(delta, omega, t=0, demand=True):
     '''Function to plot AS-AD model'''
     # Given parameters
     y_bar = 2
@@ -205,8 +205,8 @@ def plot_ASAD(t=0, demand=True):
     #delta, omega, sigma_x, sigma_c = res.x  # AR(1) rates that is previously calibrated
 
     for period in range(1, t + 1):
-        z *= 0.87  # Demand shock gradually decays
-        s *= 0.87  # Supply shock gradually decays
+        z *= delta  # Demand shock gradually decays
+        s *= omega  # Supply shock gradually decays
 
         er_prev = er_list[-1]
         pi_AS_prev = pi_AS_list[-1]
@@ -233,5 +233,7 @@ def plot_ASAD(t=0, demand=True):
     plt.axvline(x=y_bar, color='red', linestyle='--', label='LRAS')
     plt.xlabel('Real GDP')
     plt.ylabel('Price Level')
+    plt.xlim((-2, 7))
+    plt.ylim((-1, 7))
     plt.legend()
     plt.title('AS-AD Diagram')
